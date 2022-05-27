@@ -1,15 +1,19 @@
 import {useState, useContext} from 'react';
 import AlertContext from '../../context/alert/AlertContect';
+import GithubContext from '../../context/github/GithubContext';
 
 function UserSearchForm() {
     const [text, setText] = useState('');
-    const { showAlert } = useContext(AlertContext)
+    const { showAlert } = useContext(AlertContext);
+    const { users, getUsers, clearUser } = useContext(GithubContext);
     const handelFormSubmit = (e) => {
         e.preventDefault();
         if(text === '') {
             showAlert("Input Field is Empty", "error")
         } else {
             // Send requist
+            getUsers(text);
+            setText('');
         }
     }
   return (
@@ -31,9 +35,11 @@ function UserSearchForm() {
                 </div>
             </div>
         </form>
-        <div>
-            <button className='btn btn-ghost btn-lg'>Clear</button>
-        </div>
+        {users.length > 0 && (
+            <div>
+                <button className='btn btn-ghost btn-lg' onClick={() => clearUser()}>Clear</button>
+            </div>
+        )}
     </div>
   )
 }
