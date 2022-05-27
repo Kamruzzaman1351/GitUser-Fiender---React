@@ -1,8 +1,12 @@
-
+import UserProfile from "../components/users/UserProfile";
+import UserRepo from "../components/repo/UserRepo";
 
 function UserPage() {
   return (
-    <div>UserPage</div>
+    <>
+      <UserProfile />
+      <UserRepo />
+    </>
   )
 }
 
