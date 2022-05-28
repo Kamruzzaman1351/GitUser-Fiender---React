@@ -1,8 +1,22 @@
-import React from 'react';
-import { Link } from "react-router-dom";
+import React, { useContext, useEffect } from 'react';
+import { Link, useParams } from "react-router-dom";
 import { FaUsers, FaUserFriends, FaStore, FaCodepen } from "react-icons/fa"
+import GithubContext from '../../context/github/GithubContext';
+import Spinner from "../layouts/Spinner"
 
 function UserProfile() {
+  const {loading, user, getUserAndRepos } = useContext(GithubContext);
+  const param = useParams();
+  useEffect(() => {
+    getUserAndRepos(param.login)
+  }, [param.login]);
+  const {login, avatar_url,html_url,name,
+      location,bio, hireable,blog,twitter_username,
+        public_repos,public_gists, followers,following} = user;
+  if(loading) {
+    return <Spinner />
+  }
+
   return (
     <>
       <div className='w-full mx-auto lg:w10/12'>
@@ -15,30 +29,32 @@ function UserProfile() {
           <div className='custom-card-image mb-6 md:mb-0'>
             <div className='rounded-lg shadow-xl card image-full'>
               <figure>
-                <img src="#" alt='Avater' />
+                <img src={avatar_url} alt='Avater' />
               </figure>
               <div className='card-body justify-end'>
                 <h2 className='card-title mb-0'>
-                  Kamruzzaman
+                  {name}
                 </h2>
-                <p>User Name</p>
+                <p>{login}</p>
               </div>
             </div>
           </div>
           <div className='col-span-2'>
             <div className='mb-6'>
               <h1 className='text-3xl card-title'>
-                Kamruzzaman
+                {name}
                 <div className='ml-2 mr-1 badge badge-success'>
-                  User Name
+                  {login}
                 </div>
+                {hireable && (
                 <div className='mx-1 badge badge-info'>
                   Hireable
                 </div>
+                )}
               </h1>
-              <p>Bio</p>
+              <p>{bio}</p>
               <div className='mt-4 card-actions'>
-                  <a href="#" target="_blank" rel='noreferrer' className='btn btn-outline'>
+                  <a href={html_url} target="_blank" rel='noreferrer' className='btn btn-outline'>
                       Visit Github Profile
                   </a>
               </div>
@@ -48,19 +64,19 @@ function UserProfile() {
                 <div className='stat-title text-md'>
                   Location
                 </div>
-                <div className='text-lg stat-value'>Location</div>
+                <div className='text-lg stat-value'>{location}</div>
               </div>
               <div className='stat'>
                 <div className='stat-title text-md'>
                   Website
                 </div>
-                <div className='text-lg stat-value'>Website</div>
+                <div className='text-lg stat-value'>{blog}</div>
               </div>
               <div className='stat'>
                 <div className='stat-title text-md'>
                   Twitter
                 </div>
-                <div className='text-lg stat-value'>Twitter</div>
+                <div className='text-lg stat-value'>{twitter_username}</div>
               </div>
             </div>
           </div>
@@ -74,7 +90,7 @@ function UserProfile() {
                   Followers    
               </div>
               <div className='stat-value pr-5 text-3xl md:text-4xl'>
-                  Followers
+                  {followers}
               </div>
           </div>
           <div className='stat'>
@@ -85,7 +101,7 @@ function UserProfile() {
                   Following    
               </div>
               <div className='stat-value pr-5 text-3xl md:text-4xl'>
-                Following
+                {following}
               </div>
           </div>
           <div className='stat'>
@@ -96,7 +112,7 @@ function UserProfile() {
                   Public Repos    
               </div>
               <div className='stat-value pr-5 text-3xl md:text-4xl'>
-                Public Repos
+                {public_repos}
               </div>
           </div>
           <div className='stat'>
@@ -107,7 +123,7 @@ function UserProfile() {
                   Public Gists    
               </div>
               <div className='stat-value pr-5 text-3xl md:text-4xl'>
-                Public Gists
+                {public_gists}
               </div>
           </div>
         </div>
