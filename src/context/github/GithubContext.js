@@ -1,10 +1,13 @@
 import { createContext, useReducer } from "react";
 import githubReducer from "./GithubReducer";
-
+import axios from "axios";
 const GithubContext = createContext();
 const githubToken = process.env.REACT_APP_GITHUB_TOKEN;
 const githubUrl = process.env.REACT_APP_GITHUB_URL;
-
+const github = axios.create({
+    baseURL: githubUrl,
+    headers: { Authorization: `token ${githubToken}`}
+})
 export const GithubProvider = ({ children }) => {
     const initialState = {
         users: [],
@@ -15,51 +18,35 @@ export const GithubProvider = ({ children }) => {
     const [state, dispatch] = useReducer(githubReducer, initialState);
     // Fetch Github Users
     const getUsers = async(login) => {
-        setLoading()
-        const response = await fetch(`${githubUrl}/search/users?q=${login}`, {
-            headers: {
-                Authorization: `token ${githubToken}`
-            }
-        });
-        const data = await response.json();
+        setLoading();
+        const users = await github(`/search/users?q=${login}`);
         dispatch({
             type: "GET_USERS",
-            payload: data.items,
+            payload: users.data.items,
         })
     };
     // Featch User and Repos
     const getUserAndRepos = async(login) => {
         setLoading();
-        const userResponse = await fetch(`${githubUrl}/users/${login}`, {
-            headers:{
-                Authorization: `token ${githubToken}`
-            }
-        });
-        const reposResponse = await fetch(`${githubUrl}/users/${login}/repos`, {
-            headers:{
-                Authorization: `token ${githubToken}`
-            }
-        });
-        if(userResponse.status === 404 || reposResponse.status === 404) {
-            window.location = "/notfound";
-        } else {
-            const userDate = await userResponse.json();
-            const reposDate = await reposResponse.json();
+        try {
+            const [user, userRepos] = await Promise.all([
+                github(`/users/${login}`),
+                github(`/users/${login}/repos`)
+            ]);
             dispatch({
                 type: "GET_USER_AND_REPOS",
-                payload: {userDate,reposDate}
-            })
-
+                payload: {user: user.data, repos: userRepos.data}
+            })            
+        } catch (error) {
+            window.location = "/notfound";
         }
+        
     }
     const setLoading = () => {dispatch({type: "SET_LOADING"})};
     const clearUser = () => {dispatch({type:"CLEAR_USER"})}
 
     return <GithubContext.Provider value={{
-        users: state.users,
-        loading: state.loading,
-        user: state.user,
-        repos: state.repos,
+        ...state,
         getUsers,
         clearUser,
         getUserAndRepos,
